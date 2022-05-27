@@ -9,21 +9,28 @@ const client = redis.createClient({
 client.on('error', (err) => console.log('Redis Client Error', err));
 const visits = 0;
 
+
+
 ( async()=>{
 await client.connect();
-await client.ping();
+const re = await client.ping();
+console.log('ping', re)
 })()
-
 
 //Set initial visits
 client.set('visits', 0);
 
-//defining the root endpoint
 app.get('/', (req, res) => {
-    client.get('visits', (err, visits) => {
-        res.send('Number of visits is: ' + visits + 1)
-        client.set('visits', parseInt(visits) + 1)
-    })
+   res.send('working')
+})
+
+//defining the root endpoint
+app.get('/visits', async (req, res) => {
+    console.log('hi')
+    const visits = await client.get('visits');
+    const newVisitCount = parseInt(visits) + 1
+    await client.set('visits', newVisitCount)
+    res.send('Number of visits is: ' + newVisitCount)
 })
 
 //specifying the listening port
