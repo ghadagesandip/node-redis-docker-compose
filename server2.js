@@ -1,4 +1,5 @@
-const express = require('express')
+const express = require('express');
+const cli = require('nodemon/lib/cli');
 const redis = require('redis')
 
 const port = 5000;
@@ -12,6 +13,13 @@ const visits = 0;
 ( async()=>{
 await client.connect();
 const re = await client.ping();
+const subscriber = client.duplicate();
+await subscriber.connect();
+
+await subscriber.subscribe('channel', (message) => {
+    console.log('subscribed channel message', message); // 'message'
+});
+
 console.log('ping', re)
 })()
 
@@ -27,7 +35,7 @@ app.get('/visits', async (req, res) => {
     console.log('hi')
     const visits = await client.get('visits');
     const newVisitCount = parseInt(visits) + 1
-    await client.set('visits', newVisitCount)
+   
     res.send('Number of visits is: ' + newVisitCount)
 })
 
